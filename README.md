@@ -41,3 +41,11 @@ As discussed in (https://www.nature.com/articles/s41467-019-13055-y) some data a
 more "manifold-like", whereas some are more "cluster-like".  If your data fall in the
 former category, panoplyCF may work well.  If in the latter, you may have more luck
 with clustering approaches such as flowClust or flowSOM.
+
+## Citation
+PanoplyCF is as yet unpublished.  Please acknowledge me if you use panoplyCF for publication,
+and drop me a note as well!
+
+[Wade Rogers](mailto:wade.rogers@spcytomics.com)
+
+[Still Pond Cytomics](https://spcytomics.com)
