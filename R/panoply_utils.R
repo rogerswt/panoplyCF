@@ -208,7 +208,7 @@ draw_color_scale = function(min_col_value = 0, max_col_value = 5, ...) {
   vec = seq(ll, ul, length.out = 500)
   cols = pcolor(pvalue = vec, min_value = min_col_value, max_value = max_col_value)
 
-  opar = par(mar = c(0, 15, 0, 0) + .1)
+  opar = par(mar = c(0, 5, 0, 0) + .1)
   plot(0, 0, pch = '', bty = 'n', xaxt = 'n', yaxt = 'n', xlab = "", ylab = "Fluorescence Intensity",
        xlim = c(0, 5), ylim = c(ll, ul), ...
   )

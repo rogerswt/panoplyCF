@@ -51,11 +51,14 @@
 #' panoply(myfcs, parameters = c("CD4", "CD8", "CD45RA", "CCR7"), nclust = 15)
 #' @export
 panoply = function(fcs, parameters = NULL, nRecursions = 12, perplexity = 40, nclust = NULL) {
+  # should not have to load libraries here, but did it to get vignette to knit
+  require(flowCore)
+  require(flowFP)
   if (is(fcs, "flowFrame")) {
     ff = fcs
   } else if (is(fcs, "flowSet")) {
     ff = suppressWarnings(as(fcs, "flowFrame"))
-    exprs(ff) = exprs(ff)[,which(colnames(exprs(ff)) != "Original")]
+    flowCore::exprs(ff) = flowCore::exprs(ff)[,which(colnames(flowCore::exprs(ff)) != "Original")]
   } else {
     stop("Argument fcs must either be a flowFrame or a flowSet\n")
   }
@@ -63,7 +66,7 @@ panoply = function(fcs, parameters = NULL, nRecursions = 12, perplexity = 40, nc
   if(is.null(parameters)) {
     stop("Parameters must be either a numeric or character vector\n")
     if (is.numeric(parameters)) {
-      parameters = colnames(fcs)[parameters]
+      parameters = flowCore::colnames(fcs)[parameters]
     }
   }
 
@@ -73,8 +76,8 @@ panoply = function(fcs, parameters = NULL, nRecursions = 12, perplexity = 40, nc
   }
 
   message("computing fingerprint bins...")
-  mod = flowFPModel(ff, parameters = parameters, nRecursions = nRecursions)
-  fp = flowFP(ff, mod)
+  mod = flowFP::flowFPModel(ff, parameters = parameters, nRecursions = nRecursions)
+  fp = flowFP::flowFP(ff, mod)
   message("calculating bin centers...")
   res = calculate_bin_phenotypes(fp = fp, fs = ff, method = "median")
   mfi = as.list(data.frame(t(res$center)))
