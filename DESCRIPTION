@@ -20,5 +20,6 @@ Imports:
     flowCore,
     flowFP, 
     Rtsne,
-    cluster
+    cluster,
+    KernSmooth
 RoxygenNote: 7.0.2
