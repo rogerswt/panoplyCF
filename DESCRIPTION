@@ -1,0 +1,24 @@
+Package: panoplyCF
+Type: Package
+Title: Cell-based Analysis Using t-SNE on Cytometric Fingerprints
+Version: 0.1.0
+Author: Wade Rogers
+Maintainer: Wade Rogers <wade.rogers@spcytomics.com>
+Description: PanoplyCF combines the speed and efficiency of Cytometric
+    Fingerprinting (implemented in flowFP) with t-SNE dimensionality reduction.
+    Conventional t-SNE imbedding cannot be applied prospectively to new
+    data.  That is, the transformation cannot be stored and retrieved for future
+    use. PanoplyCF solves this problem by doing the imbedding on CF bin centroids
+    rather than individual events.  Thus, new data can be projected onto a given
+    set of bins, represented in a flowFPModel, and thus transported into a
+    pre-existing t-SNE map.
+License: GPL-3
+Encoding: UTF-8
+LazyData: true
+Roxygen: list(markdown = TRUE)
+Imports: 
+    flowCore,
+    flowFP, 
+    Rtsne,
+    cluster
+RoxygenNote: 7.0.2
