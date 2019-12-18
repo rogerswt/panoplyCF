@@ -1,0 +1,98 @@
+---
+title: "panoplyCF Package"
+author: "Wade Rogers"
+date: "12/18/2019"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{panoplyCF}
+  %\VignetteEngine{knitr::rmarkdown}
+  \usepackage[utf8]{inputenc}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## PanoplyCF
+
+The prevalence of high-dimensional flow (or mass) cytometry data is increasing at a rapid pace.
+The difficulties and limitations of manual analysis of such data are obvious to anyone who has
+tried to do that.  The alternative is to find or create automated analysis approaches that
+facilitate this process.
+
+There has been much recent interest in the use of manifold-learning algorithms to reduce the
+dimensionality of cell-based data to manageable levels.  t-SNE and UMAP are two examples.
+One difficulty in common between these approaches is their computational complexity
+as the total number of events and the number of measured variables for each event increase.
+Another limitation, specific to t-SNE, is that a map learned on one data set cannot
+be applied to another data set without re-computing the imbedding.
+
+I developed panoplyCF to address these limitations.  PanoplyCF first computes high-resolution 
+Cytometric Fingerprinting (CF) bins using FlowFP.  It then computes the centroids of the bins
+in high-dimensional space by taking the medians for each independent variable for all
+events contained in each bin.  It then computes the t-SNE embedding **of the bin
+centroids**.  This has two advantages over conventional t-SNE.
+
+* it's fast.  It only has to deal with thousands of bins rather than millions of events.
+* it's re-useable.  New dat can be inserted into an existing embedding via the CF bins.
+
+The final step is to perform conventional hierarchical agglomerative clustering of the
+bins, using the 2-dimensional t-SNE map coordinates.  The goal is to create clusters
+that are homogeneous in high-dimensional space as determined by the tightness of 
+the distribution of the independent variables within each cluster.
+
+### Getting started
+
+There are currently only to methods in this package (more later!).
+
+* panoply()
+* decorate_sample_panoply()
+
+#### the panoply() method
+The first one performs the above-described panoplyCF calculations and returns an object of class "panoply".
+
+```{r panoply}
+library(panoplyCF)
+# load the example data
+filename = system.file("extdata", "sampled_flowset_young.rda", package = "panoplyCF")
+filename
+load(filename)   # fs_young
+is(fs_young)
+
+# aggregate the data
+ff = suppressWarnings(as(fs_young, "flowFrame"))
+ff
+flowCore::exprs(ff) = flowCore::exprs(ff)[,which(colnames(flowCore::exprs(ff)) != "Original")]
+
+# choose the parameters to be included in the analysis.  In this case,
+# exclude the scattering and LIVEDEAD markers as they were previously used to 
+# gate the data.
+pan_params = flowCore::colnames(ff)[c(7:9, 11:22)]
+pan_params
+
+# do the panoplyCF computation (takes a couple of minutes)
+pan = panoply(fcs = ff, parameters = pan_params, nclust = 30)
+
+# check out the resulting object
+is(pan)
+names(pan)
+```
+
+#### the decorate_sample_panoply() method
+The second one renders a picture of the result.
+
+
+```{r, out.width="100%", fig.height=14, fig.width=14}
+
+decorate_sample_panoply(fcs = ff, panoply_obj = pan, colorscale = FALSE)
+```
+
+## Remarks
+Please note that the package version 0.1.0 is alpha.  It's likely to break.  Please let 
+me know what works and what doesn't.
+
+Thanks,
+Wade
+wade.rogers@spcytomics.com
+
+
