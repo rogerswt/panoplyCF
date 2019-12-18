@@ -435,6 +435,31 @@ draw_flag = function(y, q1, q3, med = NA, ...) {
   if (!is.na(med)) {points(med, y, pch = 20, ...)}
 }
 
+get.hull <- function (blob) {
+  # 2018-08-27 WTR - handle edge case that blob is a single point
+  if (is.vector(blob)) {
+    cnames= names(blob)
+    blob = matrix(blob, nrow = 1, ncol = 2)
+    colnames(blob) = cnames
+    return(blob)
+  }
+  if(!is.matrix(blob)) {
+    cnames = names(blob)
+    blob = matrix(blob, ncol = 2)
+    colnames(blob) = cnames
+    return(blob)
+  }
+  x <- blob[,1]
+  y <- blob[,2]
+  hull <- chull(x, y)
+  poly <- matrix(c(x[hull], y[hull]), nrow=length(hull), ncol=2)
+  # get rid of dupes
+  poly <- unique(poly)
+  # close the contour
+  poly <- rbind(poly, poly[1,])
+  colnames(poly) <- colnames(blob)
+  return(poly)
+}
 
 
 
