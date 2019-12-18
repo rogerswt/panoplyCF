@@ -14,6 +14,11 @@
 ################################################################################
 ################################################################################
 
+#' @import flowCore
+#' @import flowFP
+#' @import cluster
+#' @import KernSmooth
+
 #' @title panoply
 #' @description This function wraps most of what's needed.  It computes a fingerprint
 #' model, calculates the multivariate bin centers, imbeds them in a t-SNE map, and
@@ -44,12 +49,13 @@
 #' }
 #' @examples
 #' panoply(myfcs, parameters = c("CD4", "CD8", "CD45RA", "CCR7"), nclust = 15)
+#' @export
 panoply = function(fcs, parameters = NULL, nRecursions = 12, perplexity = 40, nclust = NULL) {
   if (is(fcs, "flowFrame")) {
     ff = fcs
   } else if (is(fcs, "flowSet")) {
     ff = suppressWarnings(as(fcs, "flowFrame"))
-    exprs(ff) = exprs(ff)[,which(colnames(ff) != "Original")]
+    exprs(ff) = exprs(ff)[,which(colnames(exprs(ff)) != "Original")]
   } else {
     stop("Argument fcs must either be a flowFrame or a flowSet\n")
   }
@@ -80,7 +86,7 @@ panoply = function(fcs, parameters = NULL, nRecursions = 12, perplexity = 40, nc
   map = do_tsne_reduction(mat, perplexity = 40, show = FALSE)   # higher perplexity seems to be a little nicer
 
   # cluster on the map
-  message("clustering in t-SNE space...")
+  message("agglomerative clustering in t-SNE space...")
   nclust = 30
   clst = cluster_map(map, k = nclust)
 
@@ -104,6 +110,7 @@ panoply = function(fcs, parameters = NULL, nRecursions = 12, perplexity = 40, nc
 #' @description A picture of the result of running panoply().
 #' @examples
 #' decorate_sample_panoply(myfcs, pan)
+#' @export
 decorate_sample_panoply = function(fcs, panoply_obj, superclus=NULL,
                                    colorscale=TRUE, superscale=FALSE, isLabeled=FALSE,
                                    cex=0.5, ...) {
