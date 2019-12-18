@@ -63,7 +63,7 @@ panoply = function(fcs, parameters = NULL, nRecursions = 12, perplexity = 40, nc
     stop("Argument fcs must either be a flowFrame or a flowSet\n")
   }
   # check parameters
-  if(is.null(parameters)) {
+  if (is.null(parameters)) {
     stop("Parameters must be either a numeric or character vector\n")
     if (is.numeric(parameters)) {
       parameters = flowCore::colnames(fcs)[parameters]
