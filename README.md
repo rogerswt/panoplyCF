@@ -1,6 +1,8 @@
 # panoplyCF
 R package implementing the panoplyCF algorithm for flow (and mass) cytometry
 
+![](panoply_definition.png)
+
 ## Installing the package
 ```
 devtools::install_github("rogerswt/panoplyCF", build_vignettes = TRUE)
