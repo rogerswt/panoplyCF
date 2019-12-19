@@ -38,5 +38,5 @@ This function makes a nice picture of the result of panoply.
 A picture of the result of running panoply().
 }
 \examples{
-decorate_sample_panoply(myfcs, pan)
+decorate_sample_panoply(fs_young, pan)
 }

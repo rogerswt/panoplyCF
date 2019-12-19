@@ -29,7 +29,7 @@
 #' performs clustering in t-SNE space.
 #' @param fcs The data (either a flowFrame or a flowSet)
 #' @param parameters The parameters in fcs used for analysis
-#' @param nRecursion The number of recursions in calculating the fingerprint (default = 12)
+#' @param nRecursions The number of recursions in calculating the fingerprint (default = 12)
 #' @param perplexity The perplexity value used for the imbedding of the bins (default = 40)
 #' @param nclust The number of clusters you want panoply to make
 #' @description Panoply implements a workflow of doing Cytometric Fingerprint (CF) binning of
@@ -52,7 +52,7 @@
 #'   \item{clustering}{A Vector containing cluster membership of the bins}
 #' }
 #' @examples
-#' panoply(myfcs, parameters = c("CD4", "CD8", "CD45RA", "CCR7"), nclust = 15)
+#' panoply(fs_young, parameters = c("CD4", "CD8", "CD45RA", "CCR7"), nclust = 15)
 #' @export
 panoply = function(fcs, parameters = NULL, nRecursions = 12, perplexity = 40, nclust = NULL) {
   # should not have to load libraries here, but did it to get vignette to knit
@@ -116,7 +116,7 @@ panoply = function(fcs, parameters = NULL, nRecursions = 12, perplexity = 40, nc
 #' @param ... Additional graphical parameters (see par)
 #' @description A picture of the result of running panoply().
 #' @examples
-#' decorate_sample_panoply(myfcs, pan)
+#' decorate_sample_panoply(fs_young, pan)
 #' @export
 decorate_sample_panoply = function(fcs, panoply_obj, superclus=NULL,
                                    colorscale=TRUE, superscale=FALSE, isLabeled=FALSE,

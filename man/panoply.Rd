@@ -17,11 +17,11 @@ panoply(
 
 \item{parameters}{The parameters in fcs used for analysis}
 
+\item{nRecursions}{The number of recursions in calculating the fingerprint (default = 12)}
+
 \item{perplexity}{The perplexity value used for the imbedding of the bins (default = 40)}
 
 \item{nclust}{The number of clusters you want panoply to make}
-
-\item{nRecursion}{The number of recursions in calculating the fingerprint (default = 12)}
 }
 \value{
 An object of class panoply, with the following elements:
@@ -51,5 +51,5 @@ The result is an object of class "panoply" that contains slots for all of
 the important data elements.
 }
 \examples{
-panoply(myfcs, parameters = c("CD4", "CD8", "CD45RA", "CCR7"), nclust = 15)
+panoply(fs_young, parameters = c("CD4", "CD8", "CD45RA", "CCR7"), nclust = 15)
 }
