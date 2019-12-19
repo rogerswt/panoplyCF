@@ -18,6 +18,10 @@
 #' @import flowFP
 #' @import cluster
 #' @import KernSmooth
+#' @importFrom grDevices chull
+#' @importFrom graphics axis contour layout lines par pie points rect segments text
+#' @importFrom methods as is new
+#' @importFrom stats as.hclust cutree dist fivenum median quantile rnorm
 
 #' @title panoply
 #' @description This function wraps most of what's needed.  It computes a fingerprint
