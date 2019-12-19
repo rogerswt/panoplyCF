@@ -7,7 +7,11 @@ R package implementing the panoplyCF algorithm for flow (and mass) cytometry
 ```
 devtools::install_github("rogerswt/panoplyCF", build_vignettes = TRUE)
 ```
-
+Note that there are difficulties that some platforms are having with the vignette.  If this is
+your situation, try this instead:
+```
+devtools::install_github("rogerswt/panoplyCF")
+```
 ## Background
 
 The prevalence of high-dimensional flow (or mass) cytometry data is increasing at a rapid pace.
