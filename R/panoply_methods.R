@@ -22,7 +22,7 @@
 #' @importFrom graphics axis contour layout lines par pie points rect segments text
 #' @importFrom methods as is new
 #' @importFrom stats as.hclust cutree dist fivenum median quantile rnorm
-
+#' @importFrom flowCore colnames
 #' @title panoply
 #' @description This function wraps most of what's needed.  It computes a fingerprint
 #' model, calculates the multivariate bin centers, imbeds them in a t-SNE map, and
@@ -56,8 +56,8 @@
 #' @export
 panoply = function(fcs, parameters = NULL, nRecursions = 12, perplexity = 40, nclust = NULL) {
   # should not have to load libraries here, but did it to get vignette to knit
-  require(flowCore)
-  require(flowFP)
+  # require(flowCore)
+  # require(flowFP)
   if (is(fcs, "flowFrame")) {
     ff = fcs
   } else if (is(fcs, "flowSet")) {
