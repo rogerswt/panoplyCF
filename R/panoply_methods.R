@@ -94,7 +94,6 @@ panoply = function(fcs, parameters = NULL, nRecursions = 12, perplexity = 40, nc
 
   # cluster on the map
   message("agglomerative clustering in t-SNE space...")
-  nclust = 30
   clst = cluster_map(map, k = nclust)
 
   panoply = list(mod = mod, mfi = mfi, centers = mat, map = map, clustering = clst)
