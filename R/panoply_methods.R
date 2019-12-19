@@ -62,7 +62,7 @@ panoply = function(fcs, parameters = NULL, nRecursions = 12, perplexity = 40, nc
     ff = fcs
   } else if (is(fcs, "flowSet")) {
     ff = suppressWarnings(as(fcs, "flowFrame"))
-    flowCore::exprs(ff) = flowCore::exprs(ff)[,which(colnames(flowCore::exprs(ff)) != "Original")]
+    flowCore::exprs(ff) = flowCore::exprs(ff)[,which(flowCore::colnames(flowCore::exprs(ff)) != "Original")]
   } else {
     stop("Argument fcs must either be a flowFrame or a flowSet\n")
   }
