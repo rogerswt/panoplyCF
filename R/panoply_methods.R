@@ -54,7 +54,10 @@
 #'   \item{clustering}{A Vector containing cluster membership of the bins}
 #' }
 #' @examples
-#' panoply(fs_young, parameters = c("CD4", "CD8", "CD45RA", "CCR7"), nclust = 15)
+#' # load the exmaple data
+#' load(system.file("extdata", "sampled_flowset_young.rda", package = "panoplyCF"))
+#' pan_params = c(7:9, 11:22)
+#' panoply(fs_young, parameters = pan_params, nclust = 15)
 #' @export
 panoply = function(fcs, parameters = NULL, nRecursions = 12, perplexity = 40, nclust = NULL) {
   # should not have to load libraries here, but did it to get vignette to knit
