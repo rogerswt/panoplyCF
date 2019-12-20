@@ -1,14 +1,15 @@
 # panoplyCF
-R package implementing the panoplyCF algorithm for flow (and mass) cytometry
+R package implementing the panoplyCF clustering algorithm for flow (and mass) cytometry
 
 ## Installing the package
+*Please note that the vignette takes a few minutes
+to build because the example dataset is a bit on the large side (42 mb).*
 ```
 devtools::install_github("rogerswt/panoplyCF", build_vignettes = TRUE)
 ```
-Note that there are difficulties that some platforms are having with the vignette.  If this is
-your situation, you can omit the vignette.  Note that the vignette takes a few minutes
-to build because the example dataset is a bit on the large side (42 mb).
 
+*Also note that some platforms are having trouble building the vignette.  If this is
+your situation, you can omit the vignette.*  
 ```
 devtools::install_github("rogerswt/panoplyCF")
 ```
