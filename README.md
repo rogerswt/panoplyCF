@@ -8,13 +8,13 @@ devtools::install_github("rogerswt/panoplyCF", build_vignettes = TRUE)
 Note that there are difficulties that some platforms are having with the vignette.  If this is
 your situation, you can omit the vignette.  Note that the vignette takes a few minutes
 to build because the example dataset is a bit on the large side (42 mb).
+
 ```
 devtools::install_github("rogerswt/panoplyCF")
-
-![](panoply_definition.png)
-
-
 ```
+
+![definition](panoply_definition.png)
+
 ## Background
 
 The prevalence of high-dimensional flow (or mass) cytometry data is increasing at a rapid pace.
