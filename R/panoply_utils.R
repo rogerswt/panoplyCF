@@ -53,7 +53,6 @@ calculate_bin_phenotypes = function(fp, fs, method=c("median", "mean")) {
 
 # given a collection of bin centers, perform T-SNE dimensionality reduction
 do_tsne_reduction = function(centers, perplexity = 30, show=FALSE) {
-  require(Rtsne)
   set.seed(137)   # so we'll get the same map for the same data
   res = Rtsne(dist(centers), perplexity = perplexity)$Y
   colnames(res) = c("t_sne_1", "t_sne_2")
@@ -72,7 +71,6 @@ map_sample_panoply = function(tubes, mod, map
                               , norm_fac = 1.0
                               , x_leg = -25, y_leg = -25
                               , ...) {
-  require(flowFP)
   kde = bkde2D(map, bandwidth = c(2.5, 2.5), gridsize = c(501, 501))
 
   # aggregate the 3 tubes, and extract the fp parameters
@@ -295,7 +293,6 @@ insert_wedge = function(x_ll, y_ll, width, height, colvec, min_val, max_val) {
 
 # define a color function to transform a parameter value
 pcolor = function(pvalue, min_value = 0, max_value = 4) {
-  require(fields)
   top_col = 'red'
   bot_col = 'darkgreen'
   mid_col = 'yellow'
@@ -409,7 +406,6 @@ parallel_contours = function(mfi, parameters = names(mfi), col = 'blue', ...) {
 }
 
 draw_y_grid = function(lo = -4, hi = 0) {
-  require(fields)
   minor = seq(2, 9, by = 1)
   major = 10 ^ seq(lo, hi, by = 1)
   for (maj in major) {
