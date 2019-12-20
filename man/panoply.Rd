@@ -51,5 +51,8 @@ The result is an object of class "panoply" that contains slots for all of
 the important data elements.
 }
 \examples{
-panoply(fs_young, parameters = c("CD4", "CD8", "CD45RA", "CCR7"), nclust = 15)
+# load the exmaple data
+load(system.file("extdata", "sampled_flowset_young.rda", package = "panoplyCF"))
+pan_params = c(7:9, 11:22)
+panoply(fs_young, parameters = pan_params, nclust = 15)
 }
