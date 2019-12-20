@@ -59,8 +59,13 @@ There are currently only to methods in this package (more later!).
 #### the panoply() method
 The first one performs the above-described panoplyCF calculations and returns an object of class "panoply".
 
+```{r echo=FALSE}
+# this is added so that flowCore::identifier() is available in the vigette environment
+```
+
 ```{r panoply, eval=TRUE, echo=TRUE}
 library(panoplyCF)
+library(flowCore)
 # load the example data
 filename = system.file("extdata", "sampled_flowset_young.rda", package = "panoplyCF")
 load(filename)   # fs_young

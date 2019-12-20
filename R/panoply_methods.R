@@ -17,12 +17,14 @@
 #' @import flowCore
 #' @import flowFP
 #' @import cluster
+#' @import fields
+#' @import Rtsne
 #' @import KernSmooth
 #' @importFrom grDevices chull
 #' @importFrom graphics axis contour layout lines par pie points rect segments text
 #' @importFrom methods as is new
 #' @importFrom stats as.hclust cutree dist fivenum median quantile rnorm
-#' @importFrom flowCore colnames
+#' @importFrom flowCore colnames identifier
 #' @title panoply
 #' @description This function wraps most of what's needed.  It computes a fingerprint
 #' model, calculates the multivariate bin centers, imbeds them in a t-SNE map, and
