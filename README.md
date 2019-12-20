@@ -12,8 +12,7 @@ to build because the example dataset is a bit on the large side (42 mb).
 ```
 devtools::install_github("rogerswt/panoplyCF")
 ```
-
-![definition](panoply_definition.png)
+<img src="panoply_definition.png" width=50%>
 
 ## Background
 
