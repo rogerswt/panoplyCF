@@ -106,7 +106,7 @@ suppressMessages(decorate_sample_panoply(fcs = ff, panoply_obj = pan, colorscale
 ```
 
 ## Remarks
-Please note that the package version 0.1.0 is alpha.  It's likely to break.  Please let 
+Please note that the package versions 0.1.x are alpha.  It's likely to break.  Please let 
 me know what works and what doesn't.
 
 Thanks,

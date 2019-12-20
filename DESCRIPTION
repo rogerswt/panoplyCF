@@ -1,7 +1,7 @@
 Package: panoplyCF
 Type: Package
 Title: Cell-based Analysis Using t-SNE on Cytometric Fingerprints
-Version: 0.1.0
+Version: 0.1.1
 Author: Wade Rogers
 Maintainer: Wade Rogers <wade.rogers@spcytomics.com>
 Description: PanoplyCF combines the speed and efficiency of Cytometric
