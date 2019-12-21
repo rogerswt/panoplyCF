@@ -61,32 +61,24 @@ The first one performs the above-described panoplyCF calculations and returns an
 
 ```{r echo=FALSE}
 # this is added so that flowCore::identifier() is available in the vigette environment
+library(flowCore)
 ```
 
 ```{r panoply, eval=TRUE, echo=TRUE}
 library(panoplyCF)
-library(flowCore)
 # load the example data
 filename = system.file("extdata", "sampled_flowset_young.rda", package = "panoplyCF")
 load(filename)   # fs_young
 is(fs_young)
 
-# aggregate the data
-# NOTE: I had to do this to get the vignette to knit, but you should
-# be able to feed a flowSet directly to panoply()
-# 
-ff = suppressWarnings(as(fs_young, "flowFrame"))
-ff
-flowCore::exprs(ff) = flowCore::exprs(ff)[,which(colnames(flowCore::exprs(ff)) != "Original")]
-
 # choose the parameters to be included in the analysis.  In this case,
 # exclude the scattering and LIVEDEAD markers as they were previously used to 
 # gate the data.
-pan_params = flowCore::colnames(ff)[c(7:9, 11:22)]
+pan_params = flowCore::colnames(fs_young)[c(7:9, 11:22)]
 pan_params
 
 # do the panoplyCF computation (takes a couple of minutes)
-pan = panoply(fcs = ff, parameters = pan_params, nclust = 30)
+pan = panoply(fcs = fs_young, parameters = pan_params, nclust = 30)
 
 # check out the resulting object
 is(pan)
@@ -97,12 +89,12 @@ names(pan)
 The second one renders a picture of the result.
 
 ```{r, echo=TRUE, eval=FALSE}
-decorate_sample_panoply(fcs = ff, panoply_obj = pan, colorscale = FALSE)
+decorate_sample_panoply(fcs = fs_young, panoply_obj = pan, colorscale = FALSE)
 ```
 
 ```{r, echo=FALSE, out.width="100%", fig.height=14, fig.width=14}
 
-suppressMessages(decorate_sample_panoply(fcs = ff, panoply_obj = pan, colorscale = FALSE))
+suppressMessages(decorate_sample_panoply(fcs = fs_young, panoply_obj = pan, colorscale = FALSE))
 ```
 
 ## Remarks
