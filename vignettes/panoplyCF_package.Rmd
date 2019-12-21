@@ -94,7 +94,7 @@ decorate_sample_panoply(fcs = fs_young, panoply_obj = pan, colorscale = FALSE)
 
 ```{r, echo=FALSE, out.width="100%", fig.height=14, fig.width=14}
 
-suppressMessages(decorate_sample_panoply(fcs = fs_young, panoply_obj = pan, colorscale = FALSE))
+suppressMessages(decorate_sample_panoply(fcs = fs_young, panoply_obj = pan, colorscale = TRUE))
 ```
 
 ## Remarks
