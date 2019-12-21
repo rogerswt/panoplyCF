@@ -3,7 +3,7 @@ R package implementing the panoplyCF clustering algorithm for flow (and mass) cy
 
 ## Installing the package
 *Please note that the vignette takes a few minutes
-to build because the example dataset is a bit on the large side (42 mb).*
+to build because the example dataset is a bit on the large side (~10 mb).*
 ```
 devtools::install_github("rogerswt/panoplyCF", build_vignettes = TRUE)
 ```
