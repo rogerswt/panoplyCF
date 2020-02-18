@@ -47,14 +47,17 @@ learning algorithms work best when there is a manifold present in the data to be
 As discussed in (https://www.nature.com/articles/s41467-019-13055-y) some data are
 more "manifold-like", whereas some are more "cluster-like".  If your data fall in the
 former category, panoplyCF may work well.  If in the latter, you may have more luck
-with clustering approaches such as flowClust or flowSOM.
+with clustering approaches such as flowClust or flowSOM, or the companion to this package,
+\link[fluster]{https://github.com/rogerswt/fluster} which uses the same fingerprint
+binning approach, but clusters in high-dimensionality space instead of t-SNE embedding.
 
 ### Getting started
 
-There are currently only to methods in this package (more later!).
+There are currently only three methods in this package (more later!).
 
 * panoply()
 * decorate_sample_panoply()
+* panoply_map_sample()
 
 #### the panoply() method
 The first one performs the above-described panoplyCF calculations and returns an object of class "panoply".
@@ -97,10 +100,10 @@ decorate_sample_panoply(fcs = fs_young, panoply_obj = pan, colorscale = FALSE)
 suppressMessages(decorate_sample_panoply(fcs = fs_young, panoply_obj = pan, colorscale = TRUE))
 ```
 
-## Looking at differential expression of clusters
+## Looking at differential expression of clusters - panoply_map_sample()
 Now that we have a panoply model, we can map other samples to it to look for differential expression.  We've created the panoply model on the flowSet consisting of 10 sub-sampled instances from young people.  We'll load up 10 sub-sampled instances from older people, and look for clusters that seem to differ between the two groups.
 
-NOTE: the data here are (a) subsampled, and (b) only 10 in each group, so this section isn't likely to find anything interesting but is included to illustrate the idea.  We encourage you to download \url{https://flowrepository.org/id/FR-FCM-ZZGS} in its entirety and follow this idea on the full data set. 
+***NOTE: the data here are (a) subsampled, and (b) only 10 in each group, so this section isn't likely to find much of anything interesting but is included to illustrate the idea.  We encourage you to download \url{https://flowrepository.org/id/FR-FCM-ZZGS} in its entirety and follow this idea on the full data set. ***
 
 ```{r, echo=TRUE, eval=FALSE}
 fn_old = system.file("extdata", "sampled_flowset_old.rda", package = "panoplyCF")
@@ -128,8 +131,11 @@ for (i in 1:ncol(sadistics)) {
   pval[i] = wilcox.test(sadistics[1:10, i], sadistics[11:20, i], exact = FALSE)$p.value
 }
 
-pval
+most_significant_cluster = which(pval == min(pval))
+most_significant_cluster
 ```
+Notice that the most significant cluster is cluster number 20.  Looking back to the panoply spread, we see that this cluster is CD3+ CD8+ CD45RA+ CCR7+.  This corresponds to CD8 Naive T cells, and they're lower in older folks compared to younger folks.  Does this make sense to you immunologists out there?
+
 
 ## Remarks
 Please note that the package versions 0.1.x are alpha.  It's likely to break.  Please let 
