@@ -105,7 +105,7 @@ Now that we have a panoply model, we can map other samples to it to look for dif
 
 ***NOTE: the data here are (a) subsampled, and (b) only 10 in each group, so this section isn't likely to find much of anything interesting but is included to illustrate the idea.  We encourage you to download \url{https://flowrepository.org/id/FR-FCM-ZZGS} in its entirety and follow this idea on the full data set. ***
 
-```{r, echo=TRUE, eval=FALSE}
+```{r, echo=TRUE, eval=TRUE}
 fn_old = system.file("extdata", "sampled_flowset_old.rda", package = "panoplyCF")
 load(fn_old)   # fs_old
 
@@ -131,8 +131,8 @@ for (i in 1:ncol(sadistics)) {
   pval[i] = wilcox.test(sadistics[1:10, i], sadistics[11:20, i], exact = FALSE)$p.value
 }
 
-most_significant_cluster = which(pval == min(pval))
-most_significant_cluster
+most_significant_cluster = which(pval == min(pval))   # 
+
 ```
 Notice that the most significant cluster is cluster number 20.  Looking back to the panoply spread, we see that this cluster is CD3+ CD8+ CD45RA+ CCR7+.  This corresponds to CD8 Naive T cells, and they're lower in older folks compared to younger folks.  Does this make sense to you immunologists out there?
 
