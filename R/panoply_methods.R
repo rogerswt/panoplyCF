@@ -183,8 +183,37 @@ decorate_sample_panoply = function(fcs, panoply_obj, superclus=NULL,
       cl<-col_vector[1:length(superclus)]
       pie(rep(1,length(superclus)), col=cl)
     }
-
-
   }
 }
+
+#' @title Map a Sample to a Panoply Model
+#' @description This function determines, for a single sample, the number of cells in each cluster.
+#' @param ff A sample flowFrame
+#' @param panoply_obj An object of type "panoply", the result of running panoply()
+#' @return  Per-cluster counts and fractions
+#' @export
+panoply_map_sample = function(ff, panoply_obj) {
+  # apply the flowFPModel to the sample
+  fp = flowFP(fcs = ff, model = panoply_obj$mod)
+
+  # get the vector of event bin membership
+  btag = tags(fp)[[1]]
+
+  # assign event cluster membership
+  nclust = max(panoply_obj$clustering$clst)
+  nevents = nrow(ff)
+  c_count = vector('numeric', length = nclust)
+  for (i in 1:nclust) {
+    bidx = panoply_obj$clustering$c_index[[i]]
+    eidx = which(btag %in% bidx)
+    c_count[i] = length(eidx)
+  }
+
+  # convert to percentages of total cells
+  c_pctg = c_count / nevents
+
+  # return the result
+  return(list(counts = c_count, fractions = c_pctg))
+}
+
 
