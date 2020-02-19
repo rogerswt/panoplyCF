@@ -51,7 +51,7 @@
 #'   \item{mfi}{A list representation of the bin centers}
 #'   \item{centers}{The t-SNE map.  Dots represent bins}
 #'   \item{map}{The t-SNE map.  Dots represent bins}
-#'   \item{clustering}{A Vector containing cluster membership of the bins}
+#'   \item{clustering}{A named list containing cluster membership of the bins}
 #' }
 #' @examples
 #' # load the exmaple data
@@ -95,7 +95,7 @@ panoply = function(fcs, parameters = NULL, nRecursions = 12, perplexity = 40, nc
   # original t-SNE from PanoplyCF
   message("doing the t-SNE embedding...")
 
-  map = do_tsne_reduction(mat, perplexity = 40, show = FALSE)   # higher perplexity seems to be a little nicer
+  map = do_tsne_reduction(mat, perplexity = perplexity, show = FALSE)   # higher perplexity seems to be a little nicer
 
   # cluster on the map
   message("agglomerative clustering in t-SNE space...")
