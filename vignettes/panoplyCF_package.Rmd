@@ -131,9 +131,14 @@ for (i in 1:ncol(sadistics)) {
   pval[i] = wilcox.test(sadistics[1:10, i], sadistics[11:20, i], exact = FALSE)$p.value
 }
 
-most_significant_cluster = which(pval == min(pval))   # 
+srt = sort(pval, index.return = TRUE)
+srt$x
+srt$ix
 
 ```
+
+***BIG CAVEAT: We're not adjusting P values for multiple comparisons (e.g. Bonferroni), because the example data set is too small.  YOU SHOULD DO THIS FOR REAL WORK!!***
+
 Notice that the most significant cluster is cluster number 20.  Looking back to the panoply spread, we see that this cluster is CD3+ CD8+ CD45RA+ CCR7+.  This corresponds to CD8 Naive T cells, and they're lower in older folks compared to younger folks.  Does this make sense to you immunologists out there?
 
 
