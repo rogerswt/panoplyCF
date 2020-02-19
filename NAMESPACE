@@ -3,6 +3,7 @@
 export(decorate_sample_panoply)
 export(panoply)
 export(panoply_map_sample)
+export(panoply_phenobars)
 import(KernSmooth)
 import(Rtsne)
 import(cluster)

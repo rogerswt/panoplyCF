@@ -30,7 +30,7 @@ An object of class panoply, with the following elements:
 \item{mfi}{A list representation of the bin centers}
 \item{centers}{The t-SNE map.  Dots represent bins}
 \item{map}{The t-SNE map.  Dots represent bins}
-\item{clustering}{A Vector containing cluster membership of the bins}
+\item{clustering}{A named list containing cluster membership of the bins}
 }
 }
 \description{
