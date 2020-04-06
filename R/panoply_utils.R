@@ -218,6 +218,26 @@ draw_color_scale = function(min_col_value = 0, max_col_value = 5, ...) {
   par(opar)
 }
 
+# draw legend for categorical labeling
+draw_cluster_legend = function(panoply_obj, cex.text = 1.25) {
+  opar = par(mar = c(.1, .1, .1, .1))
+  plot(0, 0, pch = '', xaxt = 'n', yaxt = 'n', xlab = '', ylab = '', xlim = c(0, 1), ylim = c(0, 1), bty = 'n')
+  xcol = 0.05
+  wcol = .1
+  xtext = 0.18
+  subsets = rownames(panoply_obj$labels$definitions)
+  cols = panoply_obj$labels$colors
+
+  n_items = length(subsets)
+  y = seq(.05, .95, length.out = n_items)
+  ht = .8 * .5 / n_items
+  for (i in 1:n_items) {
+    rect(xleft = xcol, ybottom = y[i] - ht, xright = xcol + wcol, ytop = y[i] + ht, col = cols[i])
+    text(x = xtext, y = y[i], labels = subsets[i], pos = 4, cex = cex.text)
+  }
+  par(opar)
+}
+
 cluster_map = function(map, h = NULL, k = NULL) {
   if (is.null(h) & is.null(k)) {
     stop("Must provide EITHER n or k\n")
@@ -457,6 +477,328 @@ get.hull <- function (blob) {
   return(poly)
 }
 
+# calculate statistics for a collection of bins
+distributions_bins = function(panoply_obj, parameters = colnames(panoply_obj$centers), bin_indices) {
+  centers = panoply_obj$centers
+  idx = bin_indices
 
+  med_vec = vector(mode = 'numeric')
+  q1_vec = vector(mode = 'numeric')
+  q3_vec = vector(mode = 'numeric')
+  mn_vec = lo_vec = hi_vec = vector(mode = 'numeric')
+  for (i in 1:length(parameters)) {
+    tmp = fivenum(centers[idx,parameters[i]])
+    med_vec[i] = tmp[3]
+    q1_vec[i] = tmp[2]
+    q3_vec[i] = tmp[4]
+    mn_vec[i] = mean(centers[idx,parameters[i]])
+    sdev = sd(centers[idx,parameters[i]])
+    lo_vec[i] = mn_vec[i] - 0.5 * sdev
+    hi_vec[i] = mn_vec[i] + 0.5 * sdev
+  }
+  names(med_vec) = names(q1_vec) = names(q3_vec) = parameters
+
+  return(list(med = med_vec, q1 = q1_vec, q3 = q3_vec, mn = mn_vec, lo = lo_vec, hi = hi_vec))
+}
+
+# find the location of each cluster within the original map
+remap_clusters = function(panoply_obj) {
+  n_clust = length(panoply_obj$clustering$c_index)
+
+  remap = matrix(NA, nrow = n_clust, ncol = 2)
+  colnames(remap) = c("t_sne_1", "t_sne_2")
+
+  for (i in 1:n_clust) {
+    # get the bins in the cluster
+    idx = panoply_obj$clustering$c_index[[i]]
+    remap[i, ] = c(median(panoply_obj$map[idx, 1]), median(panoply_obj$map[idx, 2]))
+  }
+
+  panoply_obj$clustering$remap = remap
+
+  panoply_obj
+}
+
+# label a cluster categorically
+# If the median for the cluster is above the parameter threshold, label it hi, otherwise lo
+categorical_phenotype = function(panoply_obj, parameters = colnames(panoply_obj$centers), cluster = 1) {
+  idx = panoply_obj$clustering$c_index[[cluster]]
+  res = distributions_bins(panoply_obj, bin_indices = idx)
+  # label each parameter as either lo or hi
+  p_category = rep("lo", length = length(parameters))
+  names(p_category) = parameters
+  for (i in 1:length(parameters)) {
+    if (res$mn[i] > panoply_obj$modality$thresh[i]) {p_category[i] = "hi"}
+  }
+  p_category = factor(p_category, levels = c("lo", "hi"))
+
+  p_category
+}
+
+compare_categories = function(c1, c2) {
+  n_param = length(c1)
+  if (length(which(c1 == c2)) == n_param) {
+    res = TRUE
+  } else {
+    res = FALSE
+  }
+  res
+}
+
+merge_categorical_clusters = function(panoply_obj, parameters = colnames(panoply_obj$centers)) {
+  # get the categorical mapping
+  n_clust = max(panoply_obj$clustering$clst)
+  categ = list()
+  for (i in 1:n_clust) {
+    categ[[i]] = categorical_phenotype(panoply_obj = panoply_obj, parameters = parameters, cluster = i)
+  }
+
+  # roll through and create clusters of clusters
+  cmerge = list()
+  phenotype = list()
+  # cvec is a vector of cluster indices.  When a cluster joins a merge, it's removed from this vector
+  cvec = 1:n_clust
+  k = 1
+
+  while (length(cvec) > 1) {
+    # get the head of the list of remaining clusters
+    ith = cvec[1]
+    cmerge[[k]] = ith                          # add ith to the next merge
+    phenotype[[k]] = categ[[ith]]              # record the phenotype
+    cvec = cvec[which(cvec != ith)]            # remove it from cvec
+    for (j in 1:length(cvec)) {
+      jth = cvec[j]
+      if (compare_categories(categ[[ith]], categ[[jth]])) {
+        cmerge[[k]] = append(cmerge[[k]], jth)     # add jth cluster to cmerge
+        cvec = cvec[which(cvec != jth)]            # remove jth cluster from cvec
+      }
+    }
+    k = k + 1
+  }
+  # handle the last cluster
+  if (length(cvec) > 0) {
+    cmerge[[k]] = cvec
+    phenotype[[k]] = categ[[cvec]]
+  }
+
+  # replace clustering slot with the merged result
+  orig_clustering = panoply_obj$clustering
+  c_index = list()
+  for (i in 1:length(cmerge)) {
+    c_index[[i]] = vector(mode = 'numeric')
+    for (j in 1:length(cmerge[[i]])) {
+      c_index[[i]] = append(c_index[[i]], orig_clustering$c_index[[cmerge[[i]][j]]])
+    }
+  }
+  nbins = 2 ^ nRecursions(panoply_obj$mod)
+  clst = rep(NA, length = nbins)
+  for (i in 1:length(c_index)) {
+    clst[c_index[[i]]] = i
+  }
+
+  n_clust = length(cmerge)
+  map = panoply_obj$map
+  centers = matrix(NA, nrow = n_clust, ncol = ncol(map))
+  boundaries = list()
+  cindex = list()
+  colnames(centers) = c("t_sne_1", "t_sne_2")
+  for (i in 1:n_clust) {
+    idx = which(clst == i)
+    cindex[[i]] = idx
+    centers[i, ] = c(median(map[idx, 1]), median(map[idx, 2]))
+    boundaries[[i]] = get.hull(map[idx, ])
+  }
+
+  clustering = list(clst = clst, c_index = c_index, centers = centers, boundaries = boundaries, phenotype = phenotype, func_phenotype = NULL)
+  panoply_obj$clustering = clustering
+
+  panoply_obj
+}
+
+# use the Hartigan dip-test to estimate modality for each parameter
+# calculate thresholds to be used to determine lo/hi categorization
+parameter_modality = function(ff, parameters = detect_fl_parameters(ff), crit = .2) {
+  # down-sample ff due to dip.test limitation
+  if (is(ff, "flowSet")) {ff = as(ff, "flowFrame")}
+  # Next two lines were to avoid a max_n message in dip.test, but sampling
+  # leads to non-deterministic results for cluster merging.
+  # max_n = 71999
+  # if(nrow(ff) > max_n) {ff = Subset(ff, sampleFilter(max_n))}
+
+  pv = vector(mode = 'numeric')
+  for (i in 1:length(parameters)) {
+    pv[i] = suppressMessages(dip.test(exprs(ff)[, parameters[i]])$p.value)
+  }
+
+  names(pv) = parameters
+  unimodal = pv > crit
+
+  # calculate hi/lo thresholds, conditioned on modality
+  thresh = vector(mode = 'numeric')
+  # multimodal thresholds
+  for (i in which(!unimodal)) {
+    kde = bkde(exprs(ff)[, parameters[i]])
+    res = find.local.minima(kde)
+    # find the lowest one above bx(1000)
+    thresh[i] = min(res$x)
+    if (length(res$x) > 1) {
+      thresh[i] = min(res$x[which(res$x > bx(1000))])
+    }
+  }
+  # unimodal thresholds defined as greater than mean + 1sd
+  for (i in which(unimodal)) {
+    x = exprs(ff)[, parameters[i]]
+    mn = mean(x)
+    sdev = sd(x)
+    thresh[i] = mn + sdev
+  }
+  names(unimodal) = parameters
+  names(thresh) = parameters
+
+  return(list(unimodal = unimodal, thresh = thresh, p.value = pv))
+}
+
+# Use a spreadsheet to define functional phenotypes.
+# Rows are functional phenotypes (for example, CD4_EM)
+# columns are markers (e.g. CD4, CD8, CD3, ...)
+# Entries are either 'lo', 'hi', or 'dc' (indicating don't care)
+# rownames will define the subset names
+# colnames MUST match the marker labeling in the data set
+# optional column labeled "Colors" will contain color coding of subsets
+retrieve_categorical_definitions = function(file) {
+  tab = read.csv(file, row.names = 1, as.is = TRUE)
+
+  # now turn the columns into properly ordered factors
+  idx = which(tolower(colnames(tab)) != "color")
+  icol = (1:ncol(tab))[-idx]
+  # for (i in idx) {
+  #   tab[, i] = factor(tab[, i], levels = c("lo", "hi", "dc"))
+  if (length(icol) == 1) {
+    colors = tab[, icol]
+  } else {
+    colors = rep(NA, nrow(tab))
+  }
+  # }
+
+  return(list(defs = tab[, idx], colors = colors))
+}
+
+assign_functional_names = function(panoply_obj, functional_definitions) {
+  fd = as.matrix(functional_definitions$defs)
+  fc = functional_definitions$colors
+  # add to the panoply object
+  panoply_obj$labels$definitions = fd
+  panoply_obj$labels$colors = fc
+
+  n_clust = length(panoply_obj$clustering$c_index)
+  func_phenotype = rep('unassigned', length = n_clust)
+  func_color = rep("black", length = n_clust)
+  pheno = panoply_obj$clustering$phenotype
+  for (i in 1:n_clust) {
+    for (j in 1:nrow(fd)) {
+      idx = which(fd[j, ] != "dc")
+      cmarkers = colnames(fd)[idx]
+      def = fd[j, idx]
+      # extract values for cluster
+      ctype = as.character(pheno[[i]][cmarkers])
+      if (length(which(ctype == def)) == length(idx)) {
+        func_phenotype[i] = rownames(fd)[j]
+        func_color[i] = fc[j]
+        break
+      }
+    }
+  }
+
+  # tack onto panoply_obj
+  panoply_obj$clustering$func_phenotype = func_phenotype
+  panoply_obj$clustering$func_color = func_color
+
+  panoply_obj
+}
+
+plot_tsne = function(panoply_obj, marker, mode = c("arithmetic", "robust"),
+                     box = TRUE, cex = 50.0, proportional = TRUE, emph = TRUE,
+                     highlight_clusters = NULL, contours = FALSE, show_cluster_number = FALSE) {
+  mode = match.arg(mode)
+  centers = panoply_obj$centers
+  n_clust = length(panoply_obj$clustering$c_index)
+  if (marker == "categorical") {
+    cols = panoply_obj$clustering$func_color
+  } else {
+    cols = pcolor(panoply_obj$clustering$c_centers[, marker], min_value = 0.0, max_value = 5.0)
+  }
+
+  map = panoply_obj$clustering$remap
+  if (proportional) {
+    size = vector('numeric')
+    for (i in 1:n_clust) {
+      size[i] = length(panoply_obj$clustering$c_index[[i]])
+    }
+    size = sqrt(size / (2 ^ nRecursions(panoply_obj$mod)))
+    cex = cex * size
+    cexbg = 1.05 * cex
+  }
+
+  if (!is.null(highlight_clusters)) {
+    hcol = rep('black', length = n_clust)
+    hcol[highlight_clusters] = 'magenta'
+    cexbg[highlight_clusters] = 2.0 * cexbg[highlight_clusters]
+  } else {
+    hcol = rep('black', length = n_clust)
+  }
+
+  # plot largest first
+  srt = sort(size, decreasing = TRUE, index.return = TRUE)$ix
+  map = map[srt, ]
+  cols = cols[srt]
+  cex = cex[srt]
+  cexbg = cexbg[srt]
+  hcol = hcol[srt]
+
+  bty = ifelse(box, 'o', 'n')
+  tit = ifelse(marker == 'categorical', '', marker)
+  if (emph) {
+    xlim = c(min(map[, 1]), max(map[, 1]))
+    ylim = c(min(map[, 2]), max(map[, 2]))
+    plot(0, 0, pch = '', , bty = bty, xaxt = 'n', yaxt = 'n', xlab = '', ylab = '', xlim = xlim, ylim = ylim, main = tit)
+    if (contours) {
+      kde = bkde2D(panoply_obj$map, bandwidth = c(2.5, 2.5), gridsize = c(501, 501))
+      contour(kde$x1, kde$x2, kde$fhat, drawlabels = FALSE, col = 'darkgray', add = TRUE, xaxt = 'n', yaxt = 'n')
+    }
+    for (i in 1:nrow(map)) {
+      points(x = map[i, 1], y = map[i, 2], pch = 20, col = hcol[i], cex = cexbg[i])
+      points(x = map[i, 1], y = map[i, 2], pch = 20, col = cols[i], cex = cex[i])
+      if (show_cluster_number) {
+        text(x = map[i, 1], y = map[i, 2], labels = srt[i], adj = 0.5, cex = 2)
+      }
+    }
+  } else {
+    plot(map, bty = bty, xaxt = 'n', yaxt = 'n', xlab = '', ylab = '', pch = 20, col = cols, cex = cex, main = tit)
+    if (contours) {
+      kde = bkde2D(panoply_obj$map, bandwidth = c(2.5, 2.5), gridsize = c(501, 501))
+      contour(kde$x1, kde$x2, kde$fhat, drawlabels = FALSE, col = 'darkgray', add = TRUE, xaxt = 'n', yaxt = 'n')
+    }
+  }
+}
+
+plot_tsne_spread = function(panoply_obj, markers = NULL, mode = c("arithmetic", "robust"), cex = 50.0, proportional = TRUE, emph = TRUE, highlight_clusters, contours = FALSE, show_cluster_number = FALSE) {
+  mode = match.arg(mode)
+
+  # calculate plot layout
+  n = length(markers) + 1
+  sq = sqrt(n)
+  frac = sq - floor(sq)
+  if (frac == 0) {
+    ac = dn = floor(sq)
+  } else {
+    ac = floor(sq) + 1
+    dn = ceiling(n / ac)
+  }
+
+  par(mfrow = c(dn, ac), mar = c(1, 1, 2, 1))
+  for (i in 1:length(markers)) {
+    plot_tsne(panoply_obj = panoply_obj, marker = markers[i], mode = mode, cex = cex, proportional = proportional, emph = emph, highlight_clusters = highlight_clusters, contours = contours, show_cluster_number = show_cluster_number)
+  }
+}
 
 

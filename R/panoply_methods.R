@@ -20,11 +20,14 @@
 #' @import fields
 #' @import Rtsne
 #' @import KernSmooth
+#' @import diptest
 #' @importFrom grDevices chull
 #' @importFrom graphics axis contour layout lines par pie points rect segments text
 #' @importFrom methods as is new
 #' @importFrom stats as.hclust cutree dist fivenum median quantile rnorm
 #' @importFrom flowCore colnames identifier
+NULL
+
 #' @title panoply
 #' @description This function wraps most of what's needed.  It computes a fingerprint
 #' model, calculates the multivariate bin centers, imbeds them in a t-SNE map, and
@@ -33,7 +36,8 @@
 #' @param parameters The parameters in fcs used for analysis
 #' @param nRecursions The number of recursions in calculating the fingerprint (default = 12)
 #' @param perplexity The perplexity value used for the imbedding of the bins (default = 40)
-#' @param nclust The number of clusters you want panoply to make
+#' @param nclust The number of clusters you want panoply to make.
+#' @param merge Logical.  Merge categorically identical clusters.
 #' @description Panoply implements a workflow of doing Cytometric Fingerprint (CF) binning of
 #' a flowFrame (or flowSet)
 #' using flowFP to a relatively high resolution (default nRecursions of 12 results
@@ -54,12 +58,12 @@
 #'   \item{clustering}{A named list containing cluster membership of the bins}
 #' }
 #' @examples
-#' # load the exmaple data
+#' # load the example data
 #' load(system.file("extdata", "sampled_flowset_young.rda", package = "panoplyCF"))
 #' pan_params = c(7:9, 11:22)
 #' panoply(fs_young, parameters = pan_params, nclust = 15)
 #' @export
-panoply = function(fcs, parameters = NULL, nRecursions = 12, perplexity = 40, nclust = NULL) {
+panoply = function(fcs, parameters = NULL, nRecursions = 12, perplexity = 40, nclust = NULL, merge = TRUE) {
   # should not have to load libraries here, but did it to get vignette to knit
   # require(flowCore)
   # require(flowFP)
@@ -101,10 +105,31 @@ panoply = function(fcs, parameters = NULL, nRecursions = 12, perplexity = 40, nc
   message("agglomerative clustering in t-SNE space...")
   clst = cluster_map(map, k = nclust)
 
-  panoply = list(mod = mod, mfi = mfi, centers = mat, map = map, clustering = clst)
-  class(panoply) = "panoply"
+  # determining modality
+  modality = parameter_modality(ff, parameters = parameters)
+
+  panoply = list(mod = mod, mfi = mfi, centers = mat, map = map, clustering = clst, modality = modality)
   message("done.")
 
+  # merging clusters
+  if (merge) {
+    panoply = merge_categorical_clusters(panoply = panoply, parameters = parameters)
+    nclust = max(panoply$clustering$clst)
+    message("merging clusters, resulting in ", nclust, " clusters...")
+  }
+
+  # calculate cluster centers, mostly for visualization
+  c_centers = matrix (NA, nrow = 0, ncol = length(parameters))
+  colnames(c_centers) = parameters
+  for (i in 1:nclust) {
+    idx = which(panoply$clustering$clst == i)
+    c_centers = rbind(c_centers, distributions_bins(panoply, parameters, bin_indices = idx)$med)
+  }
+  panoply$clustering$c_centers = c_centers
+
+  panoply = remap_clusters(panoply)
+
+  class(panoply) = "panoply"
   return(panoply)
 }
 
@@ -143,13 +168,15 @@ decorate_sample_panoply = function(fcs, panoply_obj, superclus=NULL,
   layout(laymat)
   par(mar = c(0, 0, 0, 0) + 0.1)
 
-  if (is.null(clst)) {
-    # display color-coded bin populations
-    count = map_sample_panoply(fcs, mod, map, cex = 1.5)
-  } else {
+  if (is.null(panoply_obj$clustering$func_phenotype)) {
     # make a cluster map
     count = NULL
     draw_cluster_map(map = map, clst = clst, superclus = superclus)
+  } else {
+    # show the functional cluster bubbles
+    plot_tsne(panoply_obj, marker = "categorical",
+              box = TRUE, cex = 50.0, proportional = TRUE, emph = TRUE,
+              highlight_clusters = NULL, contours = TRUE, show_cluster_number = TRUE)
   }
 
   kde = bkde2D(map, bandwidth = c(2.5, 2.5), gridsize = c(501, 501))
@@ -184,6 +211,45 @@ decorate_sample_panoply = function(fcs, panoply_obj, superclus=NULL,
       pie(rep(1,length(superclus)), col=cl)
     }
   }
+}
+
+#' @title plot_panoply_spread
+#' @description Draw a picture of the result of panoply for a given set of markers.
+#' @param panoply The result of running panoply
+#' @param markers Markers to include in the spread
+#' @param mode Compute colors using either arithmetic or robust average
+#' @param cex Scale factor for node size
+#' @param proportional Logical.  Scale by the number of events in the cluster
+#' @param emph Logical.  Emphasize each blob with a black line.
+#' @param cex.lab Scale factor for titles of the individual markers
+#' @param highlight_clusters Numeric vector indicating which clusters to highlight.
+#' @param contours Logical. Plot the original t-SNE contours.
+#' @param show_cluster_number Logical.  Print cluster numbers.
+#' @return N/A.
+#' @examples
+#' plot_panoply_spread(panoply_obj)
+#' @export
+plot_panoply_spread = function(panoply, markers = NULL, mode = c("arithmetic", "robust"),
+                             cex = 50.0, proportional = TRUE, emph = TRUE, cex.lab = 2,
+                             highlight_clusters = NULL, contours = FALSE, show_cluster_number = FALSE) {
+  plot_tsne_spread(panoply, markers, mode, cex, proportional, emph, highlight_clusters, contours, show_cluster_number)
+  if (markers[1] != 'categorical') {
+    draw_color_scale(cex.lab = cex.lab)
+  } else {
+    draw_cluster_legend(panoply_obj = panoply, cex.text = cex.lab)
+  }
+}
+
+
+#' title map_functional_names
+#' @description Based on a user-specified table, assign symbolic names to clusters
+#' @param panoply_obj The result of running panoply()
+#' @param defs_file A file containing the functional definitions.
+#' @return A decorated panoply object
+#' @export
+map_functional_names = function(panoply_obj, defs_file) {
+  fd = retrieve_categorical_definitions(defs_file)
+  panoply_obj = assign_functional_names(panoply_obj, fd)
 }
 
 #' @title Map a Sample to a Panoply Model

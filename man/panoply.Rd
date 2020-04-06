@@ -9,7 +9,8 @@ panoply(
   parameters = NULL,
   nRecursions = 12,
   perplexity = 40,
-  nclust = NULL
+  nclust = NULL,
+  merge = TRUE
 )
 }
 \arguments{
@@ -21,7 +22,9 @@ panoply(
 
 \item{perplexity}{The perplexity value used for the imbedding of the bins (default = 40)}
 
-\item{nclust}{The number of clusters you want panoply to make}
+\item{nclust}{The number of clusters you want panoply to make.}
+
+\item{merge}{Logical.  Merge categorically identical clusters.}
 }
 \value{
 An object of class panoply, with the following elements:
@@ -51,7 +54,7 @@ The result is an object of class "panoply" that contains slots for all of
 the important data elements.
 }
 \examples{
-# load the exmaple data
+# load the example data
 load(system.file("extdata", "sampled_flowset_young.rda", package = "panoplyCF"))
 pan_params = c(7:9, 11:22)
 panoply(fs_young, parameters = pan_params, nclust = 15)
