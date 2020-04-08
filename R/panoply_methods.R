@@ -176,7 +176,7 @@ decorate_sample_panoply = function(fcs, panoply_obj, superclus=NULL,
     # show the functional cluster bubbles
     plot_tsne(panoply_obj, marker = "categorical",
               box = TRUE, cex = 50.0, proportional = TRUE, emph = TRUE,
-              highlight_clusters = NULL, contours = TRUE, show_cluster_number = TRUE)
+              highlight_clusters = NULL, contours = TRUE, show_cluster_number = 2)
   }
 
   kde = bkde2D(map, bandwidth = c(2.5, 2.5), gridsize = c(501, 501))
@@ -224,14 +224,14 @@ decorate_sample_panoply = function(fcs, panoply_obj, superclus=NULL,
 #' @param cex.lab Scale factor for titles of the individual markers
 #' @param highlight_clusters Numeric vector indicating which clusters to highlight.
 #' @param contours Logical. Plot the original t-SNE contours.
-#' @param show_cluster_number Logical.  Print cluster numbers.
+#' @param show_cluster_number If not null, print cluster numbers at the size given.
 #' @return N/A.
 #' @examples
 #' plot_panoply_spread(panoply_obj)
 #' @export
 plot_panoply_spread = function(panoply, markers = NULL, mode = c("arithmetic", "robust"),
                              cex = 50.0, proportional = TRUE, emph = TRUE, cex.lab = 2,
-                             highlight_clusters = NULL, contours = FALSE, show_cluster_number = FALSE) {
+                             highlight_clusters = NULL, contours = FALSE, show_cluster_number = NULL) {
   plot_tsne_spread(panoply, markers, mode, cex, proportional, emph, highlight_clusters, contours, show_cluster_number)
   if (markers[1] != 'categorical') {
     draw_color_scale(cex.lab = cex.lab)

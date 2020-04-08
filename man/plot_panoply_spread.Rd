@@ -14,7 +14,7 @@ plot_panoply_spread(
   cex.lab = 2,
   highlight_clusters = NULL,
   contours = FALSE,
-  show_cluster_number = FALSE
+  show_cluster_number = NULL
 )
 }
 \arguments{
@@ -36,7 +36,7 @@ plot_panoply_spread(
 
 \item{contours}{Logical. Plot the original t-SNE contours.}
 
-\item{show_cluster_number}{Logical.  Print cluster numbers.}
+\item{show_cluster_number}{If not null, print cluster numbers at the size given.}
 }
 \value{
 N/A.

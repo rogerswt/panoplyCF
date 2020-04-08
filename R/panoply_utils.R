@@ -566,12 +566,15 @@ merge_categorical_clusters = function(panoply_obj, parameters = colnames(panoply
     cmerge[[k]] = ith                          # add ith to the next merge
     phenotype[[k]] = categ[[ith]]              # record the phenotype
     cvec = cvec[which(cvec != ith)]            # remove it from cvec
-    for (j in 1:length(cvec)) {
+    j = 1
+    while (j < length(cvec)) {
       jth = cvec[j]
       if (compare_categories(categ[[ith]], categ[[jth]])) {
         cmerge[[k]] = append(cmerge[[k]], jth)     # add jth cluster to cmerge
         cvec = cvec[which(cvec != jth)]            # remove jth cluster from cvec
+        j = j - 1                                  # don't skip next element
       }
+      j = j + 1
     }
     k = k + 1
   }
@@ -718,7 +721,7 @@ assign_functional_names = function(panoply_obj, functional_definitions) {
 
 plot_tsne = function(panoply_obj, marker, mode = c("arithmetic", "robust"),
                      box = TRUE, cex = 50.0, proportional = TRUE, emph = TRUE,
-                     highlight_clusters = NULL, contours = FALSE, show_cluster_number = FALSE) {
+                     highlight_clusters = NULL, contours = FALSE, show_cluster_number = NULL) {
   mode = match.arg(mode)
   centers = panoply_obj$centers
   n_clust = length(panoply_obj$clustering$c_index)
@@ -768,8 +771,8 @@ plot_tsne = function(panoply_obj, marker, mode = c("arithmetic", "robust"),
     for (i in 1:nrow(map)) {
       points(x = map[i, 1], y = map[i, 2], pch = 20, col = hcol[i], cex = cexbg[i])
       points(x = map[i, 1], y = map[i, 2], pch = 20, col = cols[i], cex = cex[i])
-      if (show_cluster_number) {
-        text(x = map[i, 1], y = map[i, 2], labels = srt[i], adj = 0.5, cex = 2)
+      if (!is.null(show_cluster_number)) {
+        text(x = map[i, 1], y = map[i, 2], labels = srt[i], adj = 0.5, cex = show_cluster_number)
       }
     }
   } else {
@@ -781,7 +784,7 @@ plot_tsne = function(panoply_obj, marker, mode = c("arithmetic", "robust"),
   }
 }
 
-plot_tsne_spread = function(panoply_obj, markers = NULL, mode = c("arithmetic", "robust"), cex = 50.0, proportional = TRUE, emph = TRUE, highlight_clusters, contours = FALSE, show_cluster_number = FALSE) {
+plot_tsne_spread = function(panoply_obj, markers = NULL, mode = c("arithmetic", "robust"), cex = 50.0, proportional = TRUE, emph = TRUE, highlight_clusters, contours = FALSE, show_cluster_number = NULL) {
   mode = match.arg(mode)
 
   # calculate plot layout
