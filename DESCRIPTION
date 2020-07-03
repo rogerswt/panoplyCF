@@ -24,6 +24,7 @@ Imports:
     flowCore,
     flowFP, 
     Rtsne,
+    wadeTools,
     cluster,
     fields,
     methods,
