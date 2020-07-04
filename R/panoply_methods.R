@@ -21,6 +21,7 @@
 #' @import Rtsne
 #' @import KernSmooth
 #' @import diptest
+#' @import wadeTools
 #' @importFrom grDevices chull
 #' @importFrom graphics axis contour layout lines par pie points rect segments text
 #' @importFrom methods as is new
